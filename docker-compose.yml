@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  django:
+    build:
+      context: ./backend  # chemin vers le répertoire Django
+    container_name: django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql  # update the dependency to match the MySQL service name
+    environment:
+      - MYSQL_HOST=mysql_brochant  # service name of MySQL in Docker Compose
+      - MYSQL_PORT=3306
+      - MYSQL_NAME=mysql_brochant
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=example
+    networks:
+      - default
+
+  react:
+    build:
+      context: ./frontend  # chemin vers le répertoire React
+    container_name: react
+    ports:
+      - "3000:3000"
+    depends_on:
+      - django
+    environment:
+      - REACT_APP_API_URL=http://django:8000/api
+
+  mysql:
+    image: mysql:8.4.3
+    container_name: mysql_brochant
+    environment:
+      MYSQL_ROOT_PASSWORD: example  # This will set the root user's password
+      MYSQL_DATABASE: mysql  # The database you want to create
+    volumes:
+      - mysql_data:/var/lib/mysql  # Data persistence
+    ports:
+      - "3307:3306"  # Expose MySQL externally on port 3307
+    networks:
+      - default
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_django_react
+    environment:
+      PMA_HOST: mysql  # PHPMyAdmin service should refer to the same MySQL service
+      PMA_USER: root
+      PMA_PASSWORD: example
+    ports:
+      - "8082:80"  # phpMyAdmin sur le port 8082
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
