@@ -3,45 +3,43 @@ version: '3.8'
 services:
   django:
     build:
-      context: ./backend  # chemin vers le répertoire Django
+      context: ./backend
     container_name: django
-    command: python manage.py runserver 0.0.0.0:8000
+    command: ./wait-for-it.sh mysql_brochant:3306 -- python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - mysql  # update the dependency to match the MySQL service name
-    environment:
-      - MYSQL_HOST=mysql_brochant  # service name of MySQL in Docker Compose
-      - MYSQL_PORT=3306
-      - MYSQL_NAME=mysql_brochant
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=example
+      - mysql
+    env_file:
+      - ./backend/.env
     networks:
       - default
 
   react:
     build:
-      context: ./frontend  # chemin vers le répertoire React
+      context: ./frontend
     container_name: react
     ports:
       - "3000:3000"
     depends_on:
       - django
-    environment:
-      - REACT_APP_API_URL=http://django:8000/api
+    env_file:
+      - ./frontend/.env
+    networks:
+      - default
 
   mysql:
     image: mysql:8.4.3
     container_name: mysql_brochant
     environment:
-      MYSQL_ROOT_PASSWORD: example  # This will set the root user's password
-      MYSQL_DATABASE: mysql  # The database you want to create
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: cours_collabortif
     volumes:
-      - mysql_data:/var/lib/mysql  # Data persistence
+      - mysql_data:/var/lib/mysql
     ports:
-      - "3307:3306"  # Expose MySQL externally on port 3307
+      - "3307:3306"
     networks:
       - default
 
@@ -49,13 +47,15 @@ services:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin_django_react
     environment:
-      PMA_HOST: mysql  # PHPMyAdmin service should refer to the same MySQL service
+      PMA_HOST: mysql
       PMA_USER: root
       PMA_PASSWORD: example
     ports:
-      - "8082:80"  # phpMyAdmin sur le port 8082
+      - "8082:80"
     depends_on:
       - mysql
+    networks:
+      - default
 
 volumes:
   mysql_data:

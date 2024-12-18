@@ -12,16 +12,19 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv()
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qlq$ej3gss41%+e_^*3qv)ayfwa9)nn)iyp9diql*fq=-(mo@$'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'auth_user',
 ]
 
 MIDDLEWARE = [
@@ -81,11 +85,11 @@ DATABASES = {
     # }, 
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_NAME', 'mysql_brochant'),  # Default to 'mysql_brochant' if env var is not set
-        'USER': os.getenv('MYSQL_USER', 'root'),  # Default to 'root'
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'example'),
-        'HOST': os.getenv('MYSQL_HOST', 'mysql_brochant'),  # Correct the host to 'mysql_brochant'
-        'PORT': os.getenv('MYSQL_PORT', '3306'),  # Default MySQL port
+        'NAME': os.getenv('MYSQL_NAME'),
+        'USER': os.getenv('MYSQL_USER'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'HOST': os.getenv('MYSQL_HOST'),  
+        'PORT': os.getenv('MYSQL_PORT'),
     }
 }
 
